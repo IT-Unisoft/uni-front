@@ -1,53 +1,28 @@
-import Navbar from "@/components/Navbar/Navbar.tsx";
-import HotelSearch from "./components/Search/HotelSearch";
-import RentalListing from "./views/RentalListing";
-import { LoginFormData } from "./types/types";
-import LoginPage from "./Auth/pages/LoginPage";
-import { useState } from "react";
-import Footer from "./views/Footer";
-
-type Page = 'home' | 'login';
+import Login from "./Auth/pages/Login";
+import { Route, Routes, useNavigate } from "react-router-dom";
+import CompleteRegistration from "./Auth/pages/CompleteRegistration";
+import Home from "./views/Home";
+import PrivateRoute from "./components/Private/PrivateRoute";
+import { Profile } from "./profile-components";
 
 export default function App() {
-    const [currentPage, setCurrentPage] = useState<Page>('home');
+    const navigate = useNavigate();
 
-    const handleUserButtonClick = () => {
-        setCurrentPage('login');
-    };
+    const isAuthenticated = !!localStorage.getItem("token");
 
-    const handleNavigateBack = () => {
-        setCurrentPage('home');
-    };
-
-    const handleLoginSuccess = (data: LoginFormData) => {
-        console.log('Login successful:', data);
-
-        alert(`Welcome! Phone: ${data.phoneNumber}, City: ${data.city}`);
-        setCurrentPage('home');
-    };
-
-    if (currentPage === 'login') {
-        return (
-            <LoginPage
-                onNavigateBack={handleNavigateBack}
-                onLoginSuccess={handleLoginSuccess}
-            />
-        );
-    }
     return (
-        <div>
-            <div className={`w-full bg-[#FFFFFF] container mx-auto px-10`}>
-                <Navbar onUserButtonClick={handleUserButtonClick} />
-            </div>
-            <div className={`w-full bg-[#FAFAFA] container mx-auto px-10`}>
-                <HotelSearch />
-            </div>
-            <div className={`w-full container mx-auto px-10`}>
-                <RentalListing />
-            </div>
-            <div className={`w-full mt-[100px]`}>
-                <Footer />
-            </div>
-        </div>
+        <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login onNavigateBack={() => navigate('/')} />} />
+            <Route path="/complete-registration" element={<CompleteRegistration />} />
+            <Route
+                path="/profile"
+                element={
+                    <PrivateRoute isAuthenticated={isAuthenticated}>
+                        <Profile />
+                    </PrivateRoute>
+                }
+            />
+        </Routes>
     )
 }
