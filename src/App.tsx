@@ -4,6 +4,7 @@ import CompleteRegistration from "./Auth/pages/CompleteRegistration";
 import Home from "./views/Home";
 import PrivateRoute from "./components/Private/PrivateRoute";
 import { Profile } from "./profile-components";
+import NotFoundPage from "./components/NotFoundPage/NotFoundPage";
 
 export default function App() {
     const navigate = useNavigate();
@@ -23,6 +24,9 @@ export default function App() {
                     </PrivateRoute>
                 }
             />
+
+
+            <Route path="*" element={<NotFoundPage />} />
         </Routes>
     )
 }

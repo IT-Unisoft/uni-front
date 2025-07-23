@@ -96,41 +96,71 @@ const Navbar: React.FC<NavbarProps> = ({ className, onUserButtonClick }) => {
 
             {/* Navigation Menu */}
             <div className="hidden md:block">
-                <ul className="flex items-center gap-8 text-sm font-medium text-gray-700">
-                    <li>
-                        <a
-                            href="#"
-                            className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
-                        >
-                            Menu 1
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
-                        >
-                            Menu 2
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
-                        >
-                            Menu 3
-                        </a>
-                    </li>
-                    <li>
-                        <a
-                            href="#"
-                            className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
-                        >
-                            Menu 4
-                        </a>
-                    </li>
-                </ul>
+                {userRole === 'host' ? (
+                    <ul className="flex items-center gap-8 text-sm font-medium text-gray-700">
+                        <li>
+                            <button
+                                onClick={() => navigate("/host/dashboard")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Панель управления
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => navigate("/host/calendar")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Календарь
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => navigate("/host/listings")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Мои объявления
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => navigate("/host/messages")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Сообщения
+                            </button>
+                        </li>
+                    </ul>
+                ) : (
+                    <ul className="flex items-center gap-8 text-sm font-medium text-gray-700">
+                        <li>
+                            <button
+                                onClick={() => navigate("/search")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Жильё
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => navigate("/experiences")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Впечатления
+                            </button>
+                        </li>
+                        <li>
+                            <button
+                                onClick={() => navigate("/online-experiences")}
+                                className="hover:text-gray-900 transition-colors duration-200 py-2 border-b-2 border-transparent hover:border-gray-300"
+                            >
+                                Онлайн-впечатления
+                            </button>
+                        </li>
+                    </ul>
+                )}
             </div>
+
 
             <div className="flex items-center gap-3">
                 <DropdownMenu>

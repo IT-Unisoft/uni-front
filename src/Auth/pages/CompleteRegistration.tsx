@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { PhoneInput } from 'react-international-phone';
 import { getLocation, completeProfile } from '@/services/authService';
+import 'react-international-phone/style.css';
 
 const CompleteRegistration = () => {
 	const location = useLocation();
@@ -12,25 +14,64 @@ const CompleteRegistration = () => {
 	const [formData, setFormData] = useState({
 		firstName: '',
 		lastName: '',
-		phone: '',
+		phone: '+998',
 		email: '',
 		birth_date: '',
 		region_id: null,
 		district_id: null,
 	});
 
+	const [phoneError, setPhoneError] = useState('');
+
+	// Валидация узбекского номера телефона
+	const validateUzbekPhone = (phone) => {
+		// Убираем все пробелы и специальные символы
+		const cleanPhone = phone.replace(/\s+/g, '').replace(/[^\d+]/g, '');
+
+		// Проверяем что номер начинается с +998 и имеет правильную длину
+		const uzbekPhoneRegex = /^\+998[0-9]{9}$/;
+
+		if (!uzbekPhoneRegex.test(cleanPhone)) {
+			return false;
+		}
+
+		// Проверяем что после +998 идет валидный код оператора
+		const operatorCode = cleanPhone.substring(4, 6);
+		const validOperatorCodes = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77', '71', '78'];
+
+		return validOperatorCodes.includes(operatorCode);
+	};
+
+	const handlePhoneChange = (phone) => {
+		setFormData((prev) => ({
+			...prev,
+			phone: phone,
+		}));
+
+		// Валидация номера
+		if (phone.length > 4) { // Проверяем только если введено больше чем +998
+			if (!validateUzbekPhone(phone)) {
+				setPhoneError('Введите корректный узбекский номер телефона');
+			} else {
+				setPhoneError('');
+			}
+		} else {
+			setPhoneError('');
+		}
+	};
+
 	const isFormValid = () => {
 		return (
 			formData.firstName.trim() &&
 			formData.lastName.trim() &&
 			formData.phone.trim() &&
+			validateUzbekPhone(formData.phone) &&
 			formData.email.trim() &&
 			formData.birth_date &&
 			formData.region_id &&
 			formData.district_id
 		);
 	};
-
 
 	const [regions, setRegions] = useState([]);
 
@@ -59,7 +100,7 @@ const CompleteRegistration = () => {
 
 			await completeProfile({
 				email: formData.email,
-				phone: formData.phone,
+				phone: formData.phone.replace('+998', ''),
 				first_name: formData.firstName,
 				last_name: formData.lastName,
 				birth_date: formData.birth_date,
@@ -72,7 +113,6 @@ const CompleteRegistration = () => {
 			console.error(error);
 		}
 	};
-
 
 	return (
 		<div className="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
@@ -140,16 +180,30 @@ const CompleteRegistration = () => {
 								<label htmlFor="phone" className="block text-base leading-6">
 									Contact information
 								</label>
-								<input
-									id="phone"
-									name="phone"
-									type="tel"
-									value={formData.phone}
-									onChange={handleChange}
-									required
-									className="block w-full p-4 border border-[#DFDFDF] bg-[#FFF] text-base leading-6 rounded-[12px]"
-									placeholder="+998901234567"
-								/>
+
+								<div className="phone-input-container">
+									<PhoneInput
+										defaultCountry="uz"
+										value={formData.phone}
+										onChange={handlePhoneChange}
+										inputProps={{
+											className: `block w-full p-4 border ${phoneError ? 'border-red-500' : 'border-[#DFDFDF]'} bg-[#FFF] text-base leading-6 rounded-[12px]`,
+											placeholder: "+998 90 123 45 67"
+										}}
+										countrySelectorStyleProps={{
+											buttonStyle: {
+												display: 'none' // Скрываем кнопку выбора страны с флагом
+											}
+										}}
+										disableCountryGuess={true}
+										forceDialCode={true}
+									/>
+								</div>
+
+								{phoneError && (
+									<p className='text-sm leading-5 text-red-500'>{phoneError}</p>
+								)}
+
 								<input
 									id="email"
 									name="email"

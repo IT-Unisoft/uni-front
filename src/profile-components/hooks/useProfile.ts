@@ -33,6 +33,8 @@ export const useProfile = () => {
 		role: ""
 	});
 
+	const [initialFormData, setInitialFormData] = useState<FormData | null>(null);
+
 	useEffect(() => {
 		const initializeProfile = async () => {
 			try {
@@ -56,7 +58,7 @@ export const useProfile = () => {
 					const userRegionId = profile.region_id ? profile.region_id.toString() : "";
 					const userDistrictId = profile.district_id ? profile.district_id.toString() : "";
 
-					setFormData({
+					const loadedData: FormData = {
 						email: userProfile.email || "",
 						phone: userProfile.phone || "",
 						first_name: profile.first_name || "",
@@ -71,7 +73,10 @@ export const useProfile = () => {
 						company_name: profile.company_name || "",
 						company_inn: profile.company_inn || "",
 						role: userProfile.role || "guest"
-					});
+					};
+
+					setFormData(loadedData);
+					setInitialFormData(loadedData); // сохраняем оригинал
 
 					if (userRegionId) {
 						const selectedRegion = allRegions.find(region => region.id.toString() === userRegionId);
@@ -189,6 +194,7 @@ export const useProfile = () => {
 				variant: "default",
 			});
 
+			setInitialFormData(formData); // обновляем сохранённую копию
 			setIsEditing(false);
 		} catch (error) {
 			toast({
@@ -201,7 +207,13 @@ export const useProfile = () => {
 		}
 	};
 
-	const handleCancel = () => setIsEditing(false);
+	const handleCancel = () => {
+		if (initialFormData) {
+			setFormData(initialFormData);
+		}
+		setIsEditing(false);
+	};
+
 	const handleEdit = () => setIsEditing(true);
 
 	return {
@@ -217,7 +229,7 @@ export const useProfile = () => {
 		uploadingAvatar,
 		formData,
 		fileInputRef,
-		
+
 		// Actions
 		setActiveTab,
 		handleInputChange,
@@ -228,4 +240,3 @@ export const useProfile = () => {
 		handleEdit
 	};
 };
-

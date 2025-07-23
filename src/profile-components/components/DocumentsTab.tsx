@@ -18,6 +18,40 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 	onRemoveAvatar,
 	getInitials
 }) => {
+	
+	const handlePinflKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "Delete") {
+			e.preventDefault();
+		}
+	};
+
+	const handlePassportKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		const key = e.key;
+		const value = (e.target as HTMLInputElement).value;
+		if (!/^[a-zA-Z0-9]$/.test(key) && key !== "Backspace" && key !== "Delete") {
+			e.preventDefault();
+		}
+		if (value.length < 2 && !/[a-zA-Z]/.test(key)) {
+			e.preventDefault(); 
+		}
+		if (value.length >= 2 && !/[0-9]/.test(key)) {
+			e.preventDefault(); 
+		}
+	};
+
+	const handleInnKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+		if (!/[0-9]/.test(e.key) && e.key !== "Backspace" && e.key !== "Delete") {
+			e.preventDefault();
+		}
+	};
+
+	const blockPasteIfInvalid = (e: React.ClipboardEvent<HTMLInputElement>, regex: RegExp) => {
+		const paste = e.clipboardData.getData('text');
+		if (!regex.test(paste)) {
+			e.preventDefault();
+		}
+	};
+
 	return (
 		<div>
 			<div className="px-6 py-4 border-b flex items-center justify-between">
@@ -53,6 +87,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 					)}
 				</div>
 			</div>
+
 			<div className="p-6">
 				<div className="grid grid-cols-1 md:grid-cols-2 gap-6">
 					{/* Avatar Upload Section */}
@@ -120,6 +155,8 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 								value={formData.pinfl}
 								onChange={onInputChange}
 								maxLength={14}
+								onKeyDown={handlePinflKeyDown}
+								onPaste={(e) => blockPasteIfInvalid(e, /^\d{14}$/)}
 								placeholder="14-значный ПИНФЛ"
 								className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 							/>
@@ -137,9 +174,42 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 							<input
 								type="text"
 								name="passport"
-								value={formData.passport}
-								onChange={onInputChange}
-								placeholder="AA1234567"
+								value={
+									formData.passport.length > 2
+										? `${formData.passport.slice(0, 2)} ${formData.passport.slice(2)}`
+										: formData.passport
+								}
+								onChange={(e) => {
+									let raw = e.target.value.replace(/\s/g, '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+									if (raw.length > 9) raw = raw.slice(0, 9);
+
+									onInputChange({
+										...e,
+										target: {
+											...e.target,
+											name: 'passport',
+											value: raw,
+										},
+									});
+								}}
+								onKeyDown={(e) => {
+									const val = (e.target as HTMLInputElement).value.replace(/\s/g, '');
+									const isNav = ['ArrowLeft', 'ArrowRight', 'Backspace', 'Delete', 'Tab'].includes(e.key);
+
+									if (val.length < 2 && !/[a-zA-Z]/.test(e.key) && !isNav) {
+										e.preventDefault(); 
+									} else if (val.length >= 2 && !/[0-9]/.test(e.key) && !isNav) {
+										e.preventDefault(); 
+									}
+								}}
+								onPaste={(e) => {
+									const pasted = e.clipboardData.getData('text').replace(/\s/g, '').toUpperCase();
+									if (!/^[A-Z]{2}[0-9]{0,7}$/.test(pasted)) {
+										e.preventDefault();
+									}
+								}}
+								placeholder="AA 1234567"
+								maxLength={10} 
 								className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
 							/>
 						) : (
@@ -149,7 +219,7 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 						)}
 					</div>
 
-					{/* Company INN - only show for company/joint accounts */}
+					{/* Company INN */}
 					{(formData.account_type === 'company' || formData.account_type === 'joint') && (
 						<div>
 							<label className="block text-sm font-medium text-gray-700 mb-2">ИНН компании</label>
@@ -159,6 +229,8 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 									name="company_inn"
 									value={formData.company_inn}
 									onChange={onInputChange}
+									onKeyDown={handleInnKeyDown}
+									onPaste={(e) => blockPasteIfInvalid(e, /^\d{9}$/)}
 									placeholder="9-значный ИНН"
 									maxLength={9}
 									className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -172,7 +244,6 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 					)}
 				</div>
 
-				{/* Document Upload Section (if needed) */}
 				{isEditing && (
 					<div className="mt-8 pt-6 border-t">
 						<h3 className="text-lg font-medium text-gray-900 mb-4">Загрузка документов</h3>
@@ -203,4 +274,3 @@ const DocumentsTab: React.FC<DocumentsTabProps> = ({
 };
 
 export default DocumentsTab;
-
