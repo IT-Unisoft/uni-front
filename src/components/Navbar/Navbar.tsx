@@ -88,7 +88,7 @@ const Navbar: React.FC<NavbarProps> = ({ className, onUserButtonClick }) => {
     };
 
     return (
-        <nav className={`flex justify-between items-center w-full py-4 px-6 bg-white border-b border-gray-100 ${className || ''}`}>
+        <nav className={`flex justify-between items-center w-full py-4 bg-white border-b border-gray-100 ${className || ''}`}>
             {/* Logo */}
             <div className="flex-shrink-0">
                 <img onClick={() => navigate("/")} src={Logo} alt="Company Logo" className="h-8 cursor-pointer" />
