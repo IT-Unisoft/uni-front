@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Edit3, Save, X } from "lucide-react";
+import { PhoneInput } from 'react-international-phone';
 import { PersonalInfoTabProps } from '../types';
+import 'react-international-phone/style.css';
 
 const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
 	formData,
@@ -15,6 +17,43 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
 	onEdit
 }) => {
 	const [errors, setErrors] = useState<{ [key: string]: string }>({});
+	const [phoneError, setPhoneError] = useState('');
+
+	const validateUzbekPhone = (phone: string) => {
+		const cleanPhone = phone.replace(/\s+/g, '').replace(/[^\d+]/g, '');
+
+		const uzbekPhoneRegex = /^\+998[0-9]{9}$/;
+
+		if (!uzbekPhoneRegex.test(cleanPhone)) {
+			return false;
+		}
+
+		const operatorCode = cleanPhone.substring(4, 6);
+		const validOperatorCodes = ['90', '91', '93', '94', '95', '97', '98', '99', '88', '77', '71', '78'];
+
+		return validOperatorCodes.includes(operatorCode);
+	};
+
+	const handlePhoneChange = (phone: string) => {
+		const syntheticEvent = {
+			target: {
+				name: 'phone',
+				value: phone.replace('+998', '') 
+			}
+		} as React.ChangeEvent<HTMLInputElement>;
+
+		onInputChange(syntheticEvent);
+
+		if (phone.length > 4) { 
+			if (!validateUzbekPhone(phone)) {
+				setPhoneError('Введите корректный узбекский номер телефона');
+			} else {
+				setPhoneError('');
+			}
+		} else {
+			setPhoneError('');
+		}
+	};
 
 	const validateField = (name: string, value: string) => {
 		const fieldErrors: { [key: string]: string } = {};
@@ -34,6 +73,13 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
 			}
 		}
 
+		if (name === 'phone') {
+			const fullPhone = '+998' + value;
+			if (value && !validateUzbekPhone(fullPhone)) {
+				fieldErrors.phone = 'Введите корректный узбекский номер телефона';
+			}
+		}
+
 		setErrors(prev => ({ ...prev, ...fieldErrors }));
 	};
 
@@ -41,7 +87,8 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
 		validateField('first_name', formData.first_name);
 		validateField('last_name', formData.last_name);
 		validateField('email', formData.email);
-		return Object.keys(errors).length === 0;
+		validateField('phone', formData.phone);
+		return Object.keys(errors).length === 0 && !phoneError;
 	};
 
 	const handleSave = () => {
@@ -147,13 +194,29 @@ const PersonalInfoTab: React.FC<PersonalInfoTabProps> = ({
 					<div>
 						<label className="block text-sm font-medium text-gray-700 mb-2">Телефон</label>
 						{isEditing ? (
-							<input
-								type="tel"
-								name="phone"
-								value={formData.phone}
-								onChange={handleInputChange}
-								className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-							/>
+							<>
+								<div className="phone-input-container">
+									<PhoneInput
+										defaultCountry="uz"
+										value={`+998${formData.phone}`}
+										onChange={handlePhoneChange}
+										inputProps={{
+											className: `w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${phoneError || errors.phone ? 'border-red-500' : 'border-gray-300'}`,
+											placeholder: "+998 90 123 45 67"
+										}}
+										countrySelectorStyleProps={{
+											buttonStyle: {
+												display: 'none' // Скрываем кнопку выбора страны с флагом
+											}
+										}}
+										disableCountryGuess={true}
+										forceDialCode={true}
+									/>
+								</div>
+								{(phoneError || errors.phone) && (
+									<p className="text-red-500 text-sm mt-1">{phoneError || errors.phone}</p>
+								)}
+							</>
 						) : (
 							<div className="px-3 py-2 bg-gray-50 rounded-lg text-gray-900">
 								{formData.phone ? `+998 ${formData.phone}` : 'Не указано'}
